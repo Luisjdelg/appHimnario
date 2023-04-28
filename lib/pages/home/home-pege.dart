@@ -1,5 +1,6 @@
+import 'dart:convert';
+
 import 'package:apphimnario/data/dataBase.dart';
-import 'package:apphimnario/data/localStorage/shop-data-base.dart';
 import 'package:apphimnario/model/event-model.dart';
 import 'package:apphimnario/myprovider/myprovider.dart';
 import 'package:apphimnario/pages/config/config-page.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:apphimnario/constants.dart';
 import 'package:apphimnario/pages/about/about.dart';
+import '../../myprovider/DBProvider.dart';
 
 const List<String> list = <String>['Evento', 'Autor', 'Edicion', 'Ritmo'];
 String model="Evento";
@@ -23,8 +25,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final DbManager dbManager = new DbManager();
   //late Model models;
-  late List<Model> modelList;
-
+  /*
   Future<void> addToCart() async {
     final item = EventModel(
         idEvent: 5,
@@ -32,11 +33,11 @@ class _HomePageState extends State<HomePage> {
     );
     await ShopDatabase.instance.insert(item);
   }
+  */
   late EventModel models;
 
   @override
   void initState() {
-    addToCart();
     super.initState();
     Provider.of<MyProvider>(context, listen: false).getEventData();
     Provider.of<MyProvider>(context, listen: false).getEditionData();
@@ -80,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                 side: BorderSide(color: Colors.white),
               ),
               onPressed: () async {
-                await addToCart();
+                //await addToCart();
                 print("clic buton");
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -128,7 +129,7 @@ class _HomePageState extends State<HomePage> {
             child: SizedBox(
               height: 30,
               child: FutureBuilder(
-                future: ShopDatabase.instance.getAllItems(),
+                future: DBProvider.instance.getAllItems(),
                 builder: (BuildContext context,AsyncSnapshot<List<EventModel>> snapshot) {
                   if (snapshot.hasData) {
                     List<EventModel> modelList = snapshot.data!;
@@ -140,7 +141,7 @@ class _HomePageState extends State<HomePage> {
                           setState(() {
                             selectedIndex = index;
                             Provider.of<MyProvider>(context, listen: false)
-                                .getSongsData(index,"Edicion");
+                                .getSongsData(index,"Evento");
                           });
                         },
                         child: Container(

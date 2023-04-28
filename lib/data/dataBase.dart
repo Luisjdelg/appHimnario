@@ -22,21 +22,6 @@ class DbManager {
     return await _database.insert('model', model.toJson());
   }
 
-  Future<List<Model>> getModelList() async {
-    await openDb();
-    final List<Map<String, dynamic>> maps = await _database.query('model');
-
-    return List.generate(maps.length, (i) {
-      return Model(
-          id: maps[i]['id'],
-          fruitName: maps[i]['quantity']);
-    });
-    // return maps
-    //     .map((e) => Model(
-    //         id: e["id"], fruitName: e["fruitName"], quantity: e["quantity"]))
-    //     .toList();
-  }
-
   Future<int> updateModel(EventModel model) async {
     await openDb();
     return await _database.update('model', model.toJson(),

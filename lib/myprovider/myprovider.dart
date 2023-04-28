@@ -35,33 +35,24 @@ class MyProvider extends ChangeNotifier{
         });
     return _database;
   }
-  Future<List<Model>> getModelList() async {
-    await openDb();
-    final List<Map<String, dynamic>> maps = await _database.query('model');
-
-    return List.generate(maps.length, (i) {
-      return Model(
-          id: maps[i]['id'],
-          fruitName: maps[i]['fruitName']);
-    });
-    // return maps
-    //     .map((e) => Model(
-    //         id: e["id"], fruitName: e["fruitName"], quantity: e["quantity"]))
-    //     .toList();
-  }
   void getSongData() async{
     songModel = await songHttpService.getSongs();
     notifyListeners();
   }
   void getSongsData(int id_event, String tipo) async{
-    if(tipo=="Evento"){
+     if(tipo=="Evento"){
       songModel = await songHttpService.getSongs();
+      //
       filtroSongs = [];
       for (var song in songModel) {
         if (id_event == 0) {
+          print(" aqui cero "+id_event.toString() );
           filtroSongs.add(song);
         } else {
+          print(id_event.toString() + "==" + song.id_eventSong.toString());
           if (id_event ==song.id_eventSong) {
+
+
             filtroSongs.add(song);
           }
         }
@@ -95,6 +86,10 @@ class MyProvider extends ChangeNotifier{
     notifyListeners();
   }
   void getEventData() async{
+    eventModel = await eventHttpService.getEvents();
+    notifyListeners();
+  }
+  void getEventDatas() async{
     eventModel = await eventHttpService.getEvents();
     notifyListeners();
   }
