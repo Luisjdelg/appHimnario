@@ -23,22 +23,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late Model model;
   late List<Model> modelList;
-  TextEditingController input1 = TextEditingController();
-  TextEditingController input2 = TextEditingController();
-  late FocusNode input1FocusNode;
-  late FocusNode input2FocusNode;
-
   @override
   void initState() {
-    input1FocusNode = FocusNode();
-    input2FocusNode = FocusNode();
+    addToCart();
     super.initState();
   }
 
   @override
   void dispose() {
-    input1FocusNode.dispose();
-    input2FocusNode.dispose();
     super.dispose();
   }
   Future<void> addToCart() async {
@@ -54,51 +46,22 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Sqlite Demo'),
-        actions: [
-
-          Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: kDefaultPaddin, vertical: kDefaultPaddin ),
-            child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  side: BorderSide(color: Colors.white),
-                ),
-                onPressed: () async {
-                  await addToCart();
-                  print("clic buton");
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Producto agregado!"),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                },
-                child: Text("Filtrar", style:TextStyle(color: Colors.white)) ),),
-        ],
-
       ),
 
       body: FutureBuilder(
         future: ShopDatabase.instance.getAllItems(),
         builder: (BuildContext context,AsyncSnapshot<List<EventModel>> snapshot) {
-          print(snapshot.data);
-          print(snapshot.hasData);
-
           if (snapshot.hasData) {
-
             List<EventModel> modelList = snapshot.data!;
-
             return ListView.builder(
               itemCount: modelList.length,
               itemBuilder: (context, index) {
                 return Card(
                   child: Text(modelList[index].nameEvent),
-
                 );
               },
             );
           }
-
           return Center(
             child: CircularProgressIndicator(),
           );
