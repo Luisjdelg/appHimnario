@@ -13,67 +13,6 @@ import 'package:apphimnario/pages/about/about.dart';
 const List<String> list = <String>['Evento', 'Autor', 'Edicion', 'Ritmo'];
 String model="Evento";
 
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final DbManager dbManager = new DbManager();
-
-  late Model model;
-  late List<Model> modelList;
-
-  @override
-  void initState() {
-    addToCart();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-  Future<void> addToCart() async {
-    final item = EventModel(
-        idEvent: 5,
-        nameEvent: "HOLA5"
-    );
-
-    await ShopDatabase.instance.insert(item);
-  }
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Sqlite Demo'),
-      ),
-
-      body: FutureBuilder(
-        future: ShopDatabase.instance.getAllItems(),
-        builder: (BuildContext context,AsyncSnapshot<List<EventModel>> snapshot) {
-          if (snapshot.hasData) {
-            List<EventModel> modelList = snapshot.data!;
-            return ListView.builder(
-              itemCount: modelList.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: Text(modelList[index].nameEvent),
-                );
-              },
-            );
-          }
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        },
-      ),
-    );
-  }
-}
-
-
-/*
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -82,86 +21,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   final DbManager dbManager = new DbManager();
+  //late Model models;
+  late List<Model> modelList;
+
+  Future<void> addToCart() async {
+    final item = EventModel(
+        idEvent: 5,
+        nameEvent: "HOLA5"
+    );
+    await ShopDatabase.instance.insert(item);
+  }
   late EventModel models;
-  late List<EventModel> modelList;
-  TextEditingController input1 = TextEditingController();
-  TextEditingController input2 = TextEditingController();
-  late FocusNode input1FocusNode;
-  late FocusNode input2FocusNode;
-
-  /*
-  TextEditingController name = TextEditingController();
-  TextEditingController email = TextEditingController();
-  TextEditingController gender = TextEditingController();
-
-  late List lists;
-  bool loading = true;
-  Future userList()async{
-    lists = await Controller().fetchData();
-    setState(() {loading=false;});
-    print(list);
-  }
-
-  Future syncToMysql()async{
-    await SyncronizationData().fetchAllInfo().then((userList)async{
-      EasyLoading.show(status: 'Dont close app. we are sync...');
-    });
-  }
-
-  Future isInteret()async{
-    await SyncronizationData.isInternet().then((connection){
-      if (connection) {
-
-        print("Internet connection abailale");
-      }else{
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No Internet")));
-      }
-    });
-  }
-
-
-*/
-
 
   @override
   void initState() {
-    input1FocusNode = FocusNode();
-    input2FocusNode = FocusNode();
+    addToCart();
     super.initState();
-    //userList();
-    //isInteret();
-    /*
-    EasyLoading.addStatusCallback((status) {
-      print('EasyLoading Status $status');
-      if (status == EasyLoadingStatus.dismiss) {
-        print('tiempo');
-
-        //_timer?.cancel();
-      }
-    });
-    */
-
-
-
     Provider.of<MyProvider>(context, listen: false).getEventData();
     Provider.of<MyProvider>(context, listen: false).getEditionData();
     Provider.of<MyProvider>(context, listen: false).getAuthorData();
     Provider.of<MyProvider>(context, listen: false).getSongsData(0,model);
-  }
-  Future<void> addToCart() async {
-    final item = EventModel(
-        idEvent: "1",
-        nameEvent: "HOLA"
-    );
-    await ShopDatabase.instance.insert(item);
-  }
-  @override
-  void dispose() {
-    input1FocusNode.dispose();
-    input2FocusNode.dispose();
-    super.dispose();
   }
   String dropdownValue=model;
   int selectedIndex = 0;
@@ -247,178 +127,24 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: SizedBox(
               height: 30,
-              child: Consumer<MyProvider>(builder: (context, provider, child) {
-                //categorias(context,provider,child);
-                if(model=="Edicion"){
-                  if (provider.editionModel.isNotEmpty) {
+              child: FutureBuilder(
+                future: ShopDatabase.instance.getAllItems(),
+                builder: (BuildContext context,AsyncSnapshot<List<EventModel>> snapshot) {
+                  if (snapshot.hasData) {
+                    List<EventModel> modelList = snapshot.data!;
                     return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: provider.editionModel.length,
-                      itemBuilder: (context, index) => GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedIndex = index;
-                            Provider.of<MyProvider>(context, listen: false)
-                                .getSongsData(index,"Edicion");
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: kDefaultPaddin),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              /** decoracion del botones de eventos**/
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.white70,
-
-                                  //color: provider.[index].id == index ? Colors.yellow : Colors.blue,
-                                ),
-                                child: Text(
-                                  provider.editionModel[index].nameEdition,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: provider.editionModel[index].idEdition ==
-                                        index
-                                        ? Theme.of(context).secondaryHeaderColor
-                                        : Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      itemCount: modelList.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          child: Text(modelList[index].nameEvent),
+                        );
+                      },
                     );
                   }
-                  return const Center(
-                      child: GlowingOverscrollIndicator(
-                        axisDirection: AxisDirection.down,
-                        color: Colors.red,
-                      ));
-                }else if(model=="Evento"){
-                  if (provider.eventModel.isNotEmpty) {
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: provider.eventModel.length,
-                      itemBuilder: (context, index) => GestureDetector(
-                        onTap: () {
-                          // print("evento:"+index.toString());
-
-                          setState(() {
-                            selectedIndex = index;
-                            Provider.of<MyProvider>(context, listen: false)
-                                .getSongsData(index,"Evento");
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: kDefaultPaddin),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              /** decoracion del botones de eventos**/
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.white70,
-
-                                  //color: provider.[index].id == index ? Colors.yellow : Colors.blue,
-                                ),
-                                child: Text(
-                                  provider.eventModel[index].nameEvent,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: provider.eventModel[index].idEvent ==
-                                        index
-                                        ? Theme.of(context).secondaryHeaderColor
-                                        : Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return const Center(
-                      child: GlowingOverscrollIndicator(
-                        axisDirection: AxisDirection.down,
-                        color: Colors.red,
-                      ));
-                }else if(model=="Autor"){
-                  if (provider.authorModel.isNotEmpty) {
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: provider.authorModel.length,
-                      itemBuilder: (context, index) => GestureDetector(
-                        onTap: () {
-                          // print("evento:"+index.toString());
-
-                          setState(() {
-                            selectedIndex = index;
-                            Provider.of<MyProvider>(context, listen: false)
-                                .getSongsData(index,"Autor");
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: kDefaultPaddin),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              /** decoracion del botones de eventos**/
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.white70,
-
-                                  //color: provider.[index].id == index ? Colors.yellow : Colors.blue,
-                                ),
-                                child: Text(
-                                  provider.authorModel[index].nameAuthor,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: provider.authorModel[index].idAuthor ==
-                                        index
-                                        ? Theme.of(context).secondaryHeaderColor
-                                        : Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return const Center(
-                      child: GlowingOverscrollIndicator(
-                        axisDirection: AxisDirection.down,
-                        color: Colors.red,
-                      ));
-                }
-                return const Center(
-                    child: GlowingOverscrollIndicator(
-                      axisDirection: AxisDirection.down,
-                      color: Colors.red,
-                    ));
-              }
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                },
               ),
             ),
           ),
@@ -550,4 +276,3 @@ class _HomePageState extends State<HomePage> {
 }
 
 
- */

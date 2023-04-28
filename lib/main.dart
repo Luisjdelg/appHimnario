@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: Consumer<ThemeProvider>(
-        child: MyHomePage(),
+        child: HomePage(),
         builder: (context, themeProvider, home) {
           return MaterialApp(
             title: 'Himnario',
