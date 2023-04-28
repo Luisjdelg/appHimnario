@@ -133,12 +133,48 @@ class _HomePageState extends State<HomePage> {
                   if (snapshot.hasData) {
                     List<EventModel> modelList = snapshot.data!;
                     return ListView.builder(
+                      scrollDirection: Axis.horizontal,
                       itemCount: modelList.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          child: Text(modelList[index].nameEvent),
-                        );
-                      },
+                      itemBuilder: (context, index) => GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                            Provider.of<MyProvider>(context, listen: false)
+                                .getSongsData(index,"Edicion");
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: kDefaultPaddin),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              /** decoracion del botones de eventos**/
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: selectedIndex == index
+                                      ? Colors.white
+                                      : Colors.white70,
+                                  //color: provider.[index].id == index ? Colors.yellow : Colors.blue,
+                                ),
+                                child: Text(
+                                  modelList[index].nameEvent,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: modelList[index].idEvent ==
+                                        index
+                                        ? Theme.of(context).secondaryHeaderColor
+                                        : Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
                   }
                   return Center(
