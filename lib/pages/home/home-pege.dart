@@ -43,8 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   Future<void> addToCart() async {
     final item = EventModel(
-        idEvent: 4,
-        nameEvent: "HOLA2"
+        idEvent: 5,
+        nameEvent: "HOLA5"
     );
 
     await ShopDatabase.instance.insert(item);
