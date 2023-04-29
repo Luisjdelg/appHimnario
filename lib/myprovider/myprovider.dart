@@ -1,14 +1,18 @@
 
+import 'dart:convert';
+
 import 'package:apphimnario/data/http-services.dart';
 import 'package:apphimnario/model/author-model.dart';
 import 'package:apphimnario/model/edition-model.dart';
 import 'package:apphimnario/model/song-model.dart';
 import 'package:apphimnario/model/event-model.dart';
 import 'package:apphimnario/model/swing-model.dart';
+import 'package:apphimnario/myprovider/DBProvider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_share/flutter_share.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:http/http.dart' as http;
 
 class MyProvider extends ChangeNotifier{
   List<SongModel> songModel = [];
@@ -24,17 +28,7 @@ class MyProvider extends ChangeNotifier{
   HttpService swingHttpService = HttpService();
   HttpService authorHttpService = HttpService();
   HttpService editionHttpService = HttpService();
-  late Database _database;
 
-  Future openDb() async {
-    _database = await openDatabase(join(await getDatabasesPath(), "ss.db"),
-        version: 1, onCreate: (Database db, int version) async {
-          await db.execute(
-            "CREATE TABLE model(id INTEGER PRIMARY KEY autoincrement, fruitName TEXT)",
-          );
-        });
-    return _database;
-  }
   void getSongData() async{
     songModel = await songHttpService.getSongs();
     notifyListeners();
@@ -46,10 +40,9 @@ class MyProvider extends ChangeNotifier{
       filtroSongs = [];
       for (var song in songModel) {
         if (id_event == 0) {
-          print(" aqui cero "+id_event.toString() );
           filtroSongs.add(song);
         } else {
-          print(id_event.toString() + "==" + song.id_eventSong.toString());
+         // print(id_event.toString() + "==" + song.id_eventSong.toString());
           if (id_event ==song.id_eventSong) {
 
 
@@ -85,14 +78,6 @@ class MyProvider extends ChangeNotifier{
     }
     notifyListeners();
   }
-  void getEventData() async{
-    eventModel = await eventHttpService.getEvents();
-    notifyListeners();
-  }
-  void getEventDatas() async{
-    eventModel = await eventHttpService.getEvents();
-    notifyListeners();
-  }
 
   void getSwingData() async{
     swingModel = await swingHttpService.getSwing();
@@ -105,7 +90,50 @@ class MyProvider extends ChangeNotifier{
   }
 
 
+  void sincronizarEvent() async {
+    var uri = Uri.parse("https://himnario.kambakfruta.com/api/event");
+    var response = await http.get(uri);
+    print("response"+response.body);
+    var dataEvent;
+    print("response.statusCode"+response.statusCode.toString());
+
+    if (response.statusCode == 200) {
+      print("entrando");
+
+      dataEvent = eventFromJson(response.body);
+      //eventFromJson(response.body);
+
+      for (int i = 0; i < dataEvent.length; i++) {
+        await DBProvider.bd.newEvent(new EventModel(
+            idEvent: dataEvent[i]["id_event"],
+            nameEvent: dataEvent[i]["name_event"]
+        ));
+      }
+    }
+
+  }
+
+  void sincronizarEvents() async {
+    var dataMeasurer;
+
+    var uri = Uri.parse("https://himnario.kambakfruta.com/api/event");
+    var data = await http.get(uri);
+    print("response"+data.body);
+    var dataEvent;
+    print("response.statusCode"+data.statusCode.toString());
+    if (data.statusCode == 200) {
+      dataMeasurer = json.decode(data.body);
+      for (int i = 0; i < dataMeasurer.length; i++) {
+        await DBProvider.bd.newEvent(new EventModel(
+          idEvent: int.parse(dataMeasurer[i]["id_event"]),
+          nameEvent: dataMeasurer[i]["name_event"],
+        ));
+      }
+    }
+  }
+
 }
+
 class ShareApp {
 
   Future<void> shareAplication() async {

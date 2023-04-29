@@ -1,4 +1,4 @@
-import 'dart:convert';
+
 
 import 'package:apphimnario/data/dataBase.dart';
 import 'package:apphimnario/model/event-model.dart';
@@ -38,8 +38,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+
     super.initState();
-    Provider.of<MyProvider>(context, listen: false).getEventData();
+    DBProvider.bd.getAllClients();
+    Provider.of<MyProvider>(context, listen: false).sincronizarEvents();
     Provider.of<MyProvider>(context, listen: false).getEditionData();
     Provider.of<MyProvider>(context, listen: false).getAuthorData();
     Provider.of<MyProvider>(context, listen: false).getSongsData(0,model);
@@ -81,7 +83,7 @@ class _HomePageState extends State<HomePage> {
                 side: BorderSide(color: Colors.white),
               ),
               onPressed: () async {
-                //await addToCart();
+
                 print("clic buton");
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -128,21 +130,31 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: SizedBox(
               height: 30,
-              child: FutureBuilder(
-                future: DBProvider.instance.getAllItems(),
+              child: FutureBuilder<List<EventModel>>(
+                future: DBProvider.bd.getAllClients(),
                 builder: (BuildContext context,AsyncSnapshot<List<EventModel>> snapshot) {
+                  print("hasData:"+snapshot.hasData.toString());
                   if (snapshot.hasData) {
+
                     List<EventModel> modelList = snapshot.data!;
                     return ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: modelList.length,
                       itemBuilder: (context, index) => GestureDetector(
                         onTap: () {
+    /*
                           setState(() {
+
                             selectedIndex = index;
                             Provider.of<MyProvider>(context, listen: false)
                                 .getSongsData(index,"Evento");
-                          });
+
+
+                          }
+
+
+                          );
+                          */
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(

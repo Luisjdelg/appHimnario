@@ -1,25 +1,17 @@
-import 'dart:convert';
 import 'dart:io';
-
+import 'package:apphimnario/model/event-model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqlite_api.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:http/http.dart' as http;
-
-import '../model/event-model.dart';
 
 class DBProvider {
-  static final DBProvider instance = DBProvider._init();
-  //static Database? _database;
-  DBProvider._init();
+  DBProvider._();
+  static final DBProvider bd = DBProvider._();
 
-  //DBProvider._();
-  //static final DBProvider bd = DBProvider._();
+  Database? _database;
 
-  late Database _database;
-
-  Future<Database> get database async {
+  Future<Database?> get database async {
     if (_database != null) return _database;
     _database = await initDB();
     return _database;
@@ -27,58 +19,49 @@ class DBProvider {
 
   initDB() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "himnario.db");
+    String path = join(documentsDirectory.path, "Suspensions.db");
     return await openDatabase(path,
         version: 1, onOpen: (db) {}, onCreate: _createTables);
   }
 
   void _createTables(Database db, int version) async {
     await db.execute("CREATE TABLE event ("
-        "id_event INTEGER PRIMARY KEY autoincrement NOT NULL,"
-        "name_event VARCHAR(50) NOT NULL");
+        "id_event INTEGER PRIMARY KEY NOT NULL,"
+        "name_event VARCHAR(50) NOT NULL)");
   }
 
-  newEventModel(EventModel newEventModel) async {
+  newEvent(EventModel newEvent) async {
     final db = await database;
 
     var orgRoute = 0;
 
-    // var res = await db.insert("EventModels", newEventModel.toMap());
-
-    var res = await db.rawInsert(
-        "INSERT INTO event (nameEvent)"
-            " VALUES (?)",
-        [
-          newEventModel.nameEvent,
-
-          orgRoute
-        ]);
-
+//    var res = await db!.insert("event", newEvent.toMap());
+    print("insertando");
+    print(newEvent.idEvent);
+    print(newEvent.nameEvent);
+    var res = await db!.rawInsert(
+        "INSERT Into event (id_event,name_event)"
+            " VALUES (${newEvent.idEvent},'${newEvent.nameEvent}')");
     return res;
+
+
   }
-  /*
-  getAllClients() async {
-    final db = await _database;
-    var res = await db.query("Client");
-    List<Client> list =
-    res.isNotEmpty ? res.map((c) => Client.fromMap(c)).toList() : [];
+
+  Future<List<EventModel>> getAllClients() async {
+    final db = await database;
+    var res = await db!.query("event");
+
+
+    List<EventModel> list;
+    if (res.isNotEmpty) {
+      print(res.length);
+
+      list = res.map((c) => EventModel.fromMap(c)).toList();
+
+    } else {
+      list = [];
+    }
+
     return list;
   }
-
-   */
-  Future<List<EventModel>> getAllItems() async {
-
-
-    final db = await _database;
-    final List<Map<String, dynamic>> maps = await db.query("table");
-    print("length"+maps.toString());
-
-    return List.generate(maps.length, (i) {
-      return EventModel(
-          idEvent: maps[i]['id_event'],
-          nameEvent: maps[i]['name_event']
-      );
-    });
-  }
-
 }

@@ -13,7 +13,7 @@ class _EditionPageState extends State<EditionPage> {
 
   @override
   void initState() {
-    Provider.of<MyProvider>(context, listen: false).getEventData();
+    //Provider.of<MyProvider>(context, listen: false).getEventData();
     super.initState();
   }
 

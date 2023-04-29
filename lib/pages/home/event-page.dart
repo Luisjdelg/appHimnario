@@ -14,7 +14,7 @@ class _EventsPageState extends State<EventsPage> {
 
   @override
   void initState() {
-    Provider.of<MyProvider>(context, listen: false).getEventData();
+    //Provider.of<MyProvider>(context, listen: false).getEventData();
     super.initState();
   }
 

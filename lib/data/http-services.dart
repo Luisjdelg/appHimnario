@@ -8,32 +8,7 @@ import 'package:apphimnario/model/swing-model.dart';
 
 
 class HttpService{
-   getEvents() async {
-    var uri = Uri.parse("https://himnario.kambakfruta.com/api/event");
-    var response = await http.get(uri);
-    print("response"+response.body);
-    var dataEvent;
-    print("response.statusCode"+response.statusCode.toString());
 
-    if (response.statusCode == 200) {
-      print("entrando");
-
-      dataEvent = eventFromJson(response.body);
-      //eventFromJson(response.body);
-      print("dataEvent"+dataEvent);
-
-      print("dataEvent.length"+dataEvent.length);
-
-      for (int i = 0; i < dataEvent.length; i++) {
-        await DBProvider.instance.newEventModel(new EventModel(
-            idEvent: dataEvent[i]["id_event"],
-            nameEvent: dataEvent[i]["name_event"]
-        ));
-      }
-    }
-
-  }
-  
   Future<List<SongModel>> getSongs() async {
     var uri = Uri.parse("https://himnario.kambakfruta.com/api/song");
 

@@ -9,12 +9,20 @@ class EventModel {
     required this.nameEvent,
   });
 
+
   int idEvent;
   String nameEvent;
   factory EventModel.fromJson(Map<String, dynamic> json) => EventModel(
     idEvent: int.parse(json["id_event"]),
     nameEvent: json["name_event"],
   );
+
+  factory EventModel.fromMap(Map<String, dynamic> json) => EventModel(
+      idEvent: json["id_event"],
+      nameEvent: json["name_event"]
+  );
+
+
 
   Map<String, dynamic> toJson() => {
     "id_event": idEvent,
