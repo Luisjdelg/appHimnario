@@ -4,6 +4,7 @@ import 'package:apphimnario/data/localStorage/storage-service.dart';
 import 'package:apphimnario/myprovider/theme-provider.dart';
 import 'package:apphimnario/pages/config/theme/app-colors.dart';
 import 'package:apphimnario/pages/home/home-pege.dart';
+import 'package:apphimnario/pages/home/home-pege.dart';
 import 'package:apphimnario/myprovider/myprovider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,10 +21,9 @@ void main() {
     setUpServiceLocator();
     final StorageService storageService = getIt<StorageService>();
     await storageService.init();
-   // await SqfliteDatabaseHelper.instance.db;
-    runApp(MyApp(
-      storageService: storageService,
-    ));
+    await DBProvider.bd.getAllSongs();
+    runApp(MyApp(storageService: storageService));
+
   }, (e, _) => throw e);
 }
 class MyApp extends StatelessWidget {
@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(

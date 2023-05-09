@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:apphimnario/data/http-services.dart';
@@ -10,8 +11,6 @@ import 'package:apphimnario/model/swing-model.dart';
 import 'package:apphimnario/myprovider/DBProvider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_share/flutter_share.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
 class MyProvider extends ChangeNotifier{
@@ -29,11 +28,35 @@ class MyProvider extends ChangeNotifier{
   HttpService authorHttpService = HttpService();
   HttpService editionHttpService = HttpService();
 
-  void getSongData() async{
+  //////////////////////
+
+
+
+  //////////////////////
+
+  void getSongDatas() async{
     songModel = await songHttpService.getSongs();
     notifyListeners();
   }
+
   void getSongsData(int id_event, String tipo) async{
+      filtroSongs = [];
+      songModel=await DBProvider.bd.getAllSongs();
+      for (var song in songModel) {
+        if (id_event == 0) {
+          filtroSongs.add(song);
+        } else {
+          if (id_event ==song.id_eventSong) {
+            filtroSongs.add(song);
+          }
+        }
+      }
+    notifyListeners();
+  }
+
+
+
+  void getSongsDat(int id_event, String tipo) async{
      if(tipo=="Evento"){
       songModel = await songHttpService.getSongs();
       //
@@ -44,8 +67,6 @@ class MyProvider extends ChangeNotifier{
         } else {
          // print(id_event.toString() + "==" + song.id_eventSong.toString());
           if (id_event ==song.id_eventSong) {
-
-
             filtroSongs.add(song);
           }
         }
@@ -89,53 +110,68 @@ class MyProvider extends ChangeNotifier{
     editionModel = await editionHttpService.getEdition();
   }
 
-
-  void sincronizarEvent() async {
-    var uri = Uri.parse("https://himnario.kambakfruta.com/api/event");
-    var response = await http.get(uri);
-    print("response"+response.body);
-    var dataEvent;
-    print("response.statusCode"+response.statusCode.toString());
-
-    if (response.statusCode == 200) {
-      print("entrando");
-
-      dataEvent = eventFromJson(response.body);
-      //eventFromJson(response.body);
-
-      for (int i = 0; i < dataEvent.length; i++) {
-        await DBProvider.bd.newEvent(new EventModel(
-            idEvent: dataEvent[i]["id_event"],
-            nameEvent: dataEvent[i]["name_event"]
-        ));
-      }
-    }
-
-  }
-
+  // sincronizacion para evento
   void sincronizarEvents() async {
-    var dataMeasurer;
-
+    var dataEvent;
     var uri = Uri.parse("https://himnario.kambakfruta.com/api/event");
     var data = await http.get(uri);
-    print("response"+data.body);
-    var dataEvent;
-    print("response.statusCode"+data.statusCode.toString());
     if (data.statusCode == 200) {
-      dataMeasurer = json.decode(data.body);
-      for (int i = 0; i < dataMeasurer.length; i++) {
-        await DBProvider.bd.newEvent(new EventModel(
-          idEvent: int.parse(dataMeasurer[i]["id_event"]),
-          nameEvent: dataMeasurer[i]["name_event"],
+      dataEvent = json.decode(data.body);
+      for (int i = 0; i < dataEvent.length; i++) {
+        await DBProvider.bd.newEvent(EventModel(
+          idEvent: int.parse(dataEvent[i]["id_event"]),
+          nameEvent: dataEvent[i]["name_event"],
+        ));
+      }
+    }
+    notifyListeners();
+  }
+  // sincronizacion para swing
+
+  void sincronizarSwings() async {
+    print("sincronisa la tabla swing");
+    var dataSwing;
+    var uri = Uri.parse("https://himnario.kambakfruta.com/api/swing");
+    var data = await http.get(uri);
+    if (data.statusCode == 200) {
+      dataSwing = json.decode(data.body);
+      for (int i = 0; i < dataSwing.length; i++) {
+        await DBProvider.bd.newSwing(SwingModel(
+          idSwing: int.parse(dataSwing[i]["id_swing"]),
+          nameSwing: dataSwing[i]["name_swing"],
         ));
       }
     }
   }
+
+  // sincronizacion para song
+  void sincronizarSongs() async {
+    var dataSong;
+    var uri = Uri.parse("https://himnario.kambakfruta.com/api/song");
+    var data = await http.get(uri);
+
+    if (data.statusCode == 200) {
+      dataSong = json.decode(data.body);
+      for (int i = 0; i < dataSong.length; i++) {
+        await DBProvider.bd.newSong(SongModel(
+          idSong: int.parse(dataSong[i]["id_song"]),
+          titleSong: dataSong[i]["title_song"],
+          noteSong: dataSong[i]["note_song"],
+          descriptionSong: dataSong[i]["description_song"],
+          id_eventSong: int.parse(dataSong[i]["id_event"]),
+          id_swingSong: int.parse(dataSong[i]["id_swing"]),
+          id_authorSong: int.parse(dataSong[i]["id_author"]),
+          id_editionSong: int.parse(dataSong[i]["id_edition"])
+        ));
+      }
+    }
+  }
+
+
 
 }
 
 class ShareApp {
-
   Future<void> shareAplication() async {
     await FlutterShare.share(
         title: "Descarga la apliación: ",
@@ -143,7 +179,6 @@ class ShareApp {
         linkUrl: 'https://play.google.com/store/apps/details?id=com.himnario.apphinminario',
         chooserTitle: 'Himnario Kichwa');
     print("msg");
-
   }
 }
 

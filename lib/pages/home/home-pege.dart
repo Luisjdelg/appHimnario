@@ -1,11 +1,14 @@
 
 
+import 'dart:async';
+
 import 'package:apphimnario/data/dataBase.dart';
 import 'package:apphimnario/model/event-model.dart';
 import 'package:apphimnario/myprovider/myprovider.dart';
 import 'package:apphimnario/pages/config/config-page.dart';
 import 'package:apphimnario/pages/details/details-song.dart';
 import 'package:apphimnario/pages/home/research-box.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:apphimnario/constants.dart';
@@ -24,57 +27,42 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final DbManager dbManager = new DbManager();
-  //late Model models;
-  /*
-  Future<void> addToCart() async {
-    final item = EventModel(
-        idEvent: 5,
-        nameEvent: "HOLA5"
-    );
-    await ShopDatabase.instance.insert(item);
-  }
-  */
   late EventModel models;
 
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
   @override
   void initState() {
-
     super.initState();
-    DBProvider.bd.getAllClients();
-    Provider.of<MyProvider>(context, listen: false).sincronizarEvents();
-    Provider.of<MyProvider>(context, listen: false).getEditionData();
-    Provider.of<MyProvider>(context, listen: false).getAuthorData();
-    Provider.of<MyProvider>(context, listen: false).getSongsData(0,model);
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.wifi || result == ConnectivityResult.mobile) {
+        print("Hay internet");
+        Provider.of<MyProvider>(context, listen: false).sincronizarEvents();
+        Provider.of<MyProvider>(context, listen: false).sincronizarSongs();
+        Provider.of<MyProvider>(context, listen: false).getSongsData(0,model);
+
+      }else{
+        print("No hay internet");
+        Provider.of<MyProvider>(context, listen: false).getSongsData(0,model);
+        DBProvider.bd.getAllEvents();
+      }
+    });
   }
   String dropdownValue=model;
   int selectedIndex = 0;
-// crea un widget del tipo scaffold
+// crea un widget del tipo scaffol
+
   @override
    Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("kambak-himnario"),
         actions: [
-        DropdownButton<String>(
-        value: dropdownValue,
-        elevation: 16,
-        style: const TextStyle(color: Colors.white),
-        onChanged: (String? value) {
-          // This is called when the user selects an item.
-          setState(() {
-            dropdownValue = value!;
-            model=value;
-            selectedIndex=0;
-            Provider.of<MyProvider>(context, listen: false).getSongsData(0,model);
-          });
-        },
-        items: list.map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value, style: TextStyle(color: Colors.black54),),
-          );
-        }).toList(),
-      ),
+
           Container(
             padding: const EdgeInsets.symmetric(
                 horizontal: kDefaultPaddin, vertical: kDefaultPaddin ),
@@ -83,16 +71,31 @@ class _HomePageState extends State<HomePage> {
                 side: BorderSide(color: Colors.white),
               ),
               onPressed: () async {
-
-                print("clic buton");
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Producto agregado!"),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
               },
-              child: Text("Filtrar", style:TextStyle(color: Colors.white)) ),),
+              child:        DropdownButton<String>(
+                value: dropdownValue,
+                elevation: 16,
+                style: const TextStyle(color: Colors.white),
+                onChanged: (String? value) {
+                  // This is called when the user selects an item.
+                  setState(() {
+                    dropdownValue = value!;
+                    model=value;
+                    selectedIndex=0;
+                    Provider.of<MyProvider>(context, listen: false).sincronizarSongs();
+                    Provider.of<MyProvider>(context, listen: false).sincronizarEvents();
+                    Provider.of<MyProvider>(context, listen: false).getSongsData(0,model);
+                  });
+                },
+                items: list.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value, style: TextStyle(color: Colors.black54),),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
         ],
 
       ),
@@ -131,30 +134,23 @@ class _HomePageState extends State<HomePage> {
             child: SizedBox(
               height: 30,
               child: FutureBuilder<List<EventModel>>(
-                future: DBProvider.bd.getAllClients(),
+                future: DBProvider.bd.getAllEvents(),
                 builder: (BuildContext context,AsyncSnapshot<List<EventModel>> snapshot) {
-                  print("hasData:"+snapshot.hasData.toString());
+                  print("paso1");
                   if (snapshot.hasData) {
-
                     List<EventModel> modelList = snapshot.data!;
                     return ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: modelList.length,
                       itemBuilder: (context, index) => GestureDetector(
                         onTap: () {
-    /*
                           setState(() {
-
                             selectedIndex = index;
                             Provider.of<MyProvider>(context, listen: false)
                                 .getSongsData(index,"Evento");
-
-
                           }
-
-
                           );
-                          */
+
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -179,7 +175,7 @@ class _HomePageState extends State<HomePage> {
                                     fontWeight: FontWeight.bold,
                                     color: modelList[index].idEvent ==
                                         index
-                                        ? Theme.of(context).secondaryHeaderColor
+                                        ? Theme.of(context).primaryColor
                                         : Theme.of(context).primaryColor,
                                   ),
                                 ),
@@ -190,14 +186,15 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   }
-                  return Center(
-                    child: CircularProgressIndicator(),
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.white,),
                   );
                 },
               ),
             ),
           ),
           // consume del proveedor y construye una lista segun los datos
+
           Consumer<MyProvider>(
             builder: (context, value, child) {
               if (value.filtroSongs.isNotEmpty) { // si el value no viene vacio

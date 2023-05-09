@@ -9,11 +9,15 @@ class SwingModel {
     required this.nameSwing,
   });
 
-  String idSwing;
+  int idSwing;
   String nameSwing;
   factory SwingModel.fromJson(Map<String, dynamic> json) => SwingModel(
     idSwing: json["id_swing"],
     nameSwing: json["name_swing"],
+  );
+  factory SwingModel.fromMap(Map<String, dynamic> json) => SwingModel(
+      idSwing: json["id_swing"],
+      nameSwing: json["name_swing"]
   );
 
   Map<String, dynamic> toJson() => {

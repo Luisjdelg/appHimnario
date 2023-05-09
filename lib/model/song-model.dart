@@ -39,6 +39,17 @@ class SongModel {
     id_editionSong: int.parse(json["id_edition"]),
   );
 
+  factory SongModel.fromMap(Map<String, dynamic> json) => SongModel(
+      idSong: json["id_song"],
+      titleSong: json["title_song"],
+      noteSong: json["note_song"],
+      descriptionSong: json["description_song"],
+      id_eventSong: json["id_event"],
+      id_swingSong: json["id_swing"],
+      id_authorSong: json["id_author"],
+      id_editionSong: json["id_edition"]
+  );
+
   Map<String, dynamic> toJson() => {
     "id_song": idSong,
     "title_song": titleSong,

@@ -13,7 +13,7 @@ class _SongPageState extends State<SongPage> {
 
   @override
   void initState() {
-    Provider.of<MyProvider>(context, listen: false).getSongData();
+    Provider.of<MyProvider>(context, listen: false).getSongDatas();
     super.initState();
   }
 
